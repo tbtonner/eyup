@@ -8,5 +8,5 @@ Simply run the eyup.exe application to run the latest version of EYUP in your sy
 
 ## Running the source code
     1) install python3 system  
-    2) navigate to eyup/source and run the command 'pip install -r requirements.txt'
+    2) navigate to eyup/src and run the command 'pip install -r requirements.txt'
     3) run the shell.py python file to run the program with your changes saved
