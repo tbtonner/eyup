@@ -52,42 +52,42 @@ def new_statement(statement, depth): # new statement added to multiline
 
     return statement
 
+if __name__ == "__main__":
+    ####################################### enter yorkshire first #######################################
 
-####################################### enter yorkshire first #######################################
+    entered_yorkshire = False
+    while entered_yorkshire == False:
+        text = input("> ").strip(" ").lower()
+        if text == "eyup":
+            print("Enterin' Yorkshire v1.0 (areyt tyke!)")
+            entered_yorkshire = True
+        else:
+            print("You need to enter Yorkshire first")
 
-entered_yorkshire = False
-while entered_yorkshire == False:
-    text = input("> ").strip(" ").lower()
-    if text == "eyup":
-        print("Enterin' Yorkshire v1.0 (areyt tyke!)")
-        entered_yorkshire = True
-    else:
-        print("You need to enter Yorkshire first")
+    ####################################### main read, eval, print loop #######################################
 
-####################################### main read, eval, print loop #######################################
+    inputs = []
+    while True:
+        try: # can't break system -> will just catch as an error
+            inputs.append(input(f'{current_bodger.CURRENT_BODGER.name}> '))
+            if start_multiline(inputs[-1]):
+                inputs[-1] = new_statement(inputs[-1], 1)
+            if inputs[-1].strip() == "":
+                continue
 
-inputs = []
-while True:
-    try: # can't break system -> will just catch as an error
-        inputs.append(input(f'{current_bodger.CURRENT_BODGER.name}> '))
-        if start_multiline(inputs[-1]):
-            inputs[-1] = new_statement(inputs[-1], 1)
-        if inputs[-1].strip() == "":
-            continue
+            # main run command
+            result, error = current_bodger.CURRENT_BODGER.run(inputs[-1])
 
-        # main run command
-        result, error = current_bodger.CURRENT_BODGER.run(inputs[-1])
+            if error:
+                print(error.as_string())
+            elif result:
+                if len(result.elements) == 1:
+                    if result.elements[0] != None:
+                        test = result.elements[0]
+                        print(repr(result.elements[0]))
+                else:
+                    print(repr(result))
 
-        if error:
-            print(error.as_string())
-        elif result:
-            if len(result.elements) == 1:
-                if result.elements[0] != None:
-                    test = result.elements[0]
-                    print(repr(result.elements[0]))
-            else:
-                print(repr(result))
-
-    except Exception as e:
-        print("By heck! Y've crashed me!")
-        print(f"Perplexed: {e}")
+        except Exception as e:
+            print("By heck! Y've crashed me!")
+            print(f"Perplexed: {e}")
