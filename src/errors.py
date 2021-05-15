@@ -1,4 +1,4 @@
-import current_bodger
+import bodgers
 
 #######################################
 # ERRORS
@@ -15,7 +15,7 @@ class Error:
 
     def as_string(self):
         result = f'\n{self.error_name}: {self.details}\n'
-        result += f'problem in {current_bodger.CURRENT_BODGER.name}, line {self.pos_start.line_number + 1}:'
+        result += f'problem in {bodgers.CURRENT_BODGER.name}, line {self.pos_start.line_number + 1}:'
         result += '\n\n' + \
             self.string_with_arrows(self.pos_start.ftxt,
                                     self.pos_start, self.pos_end)
@@ -77,7 +77,7 @@ class FlummoxedError(Error):
         context = self.context
 
         while context:
-            result = f'problem in {current_bodger.CURRENT_BODGER.name}, line {str(pos.line_number + 1)}:' + result
+            result = f'problem in {bodgers.CURRENT_BODGER.name}, line {str(pos.line_number + 1)}:' + result
             pos = context.parent_entry_pos
             context = context.parent
 

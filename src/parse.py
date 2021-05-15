@@ -1,8 +1,8 @@
-import current_bodger
-from tokens import *
-from nodes import *
-from values import List
-from errors import VexedError
+import tokens
+import nodes
+import values 
+import errors
+import bodgers
 
 #######################################
 # PARSE RESULT
@@ -73,15 +73,15 @@ class Parser:
 
     def parse(self):
         result = self.statements()
-        if not result.error and self.current_token.type != TT_EOF:
-            return result.failure(VexedError(
+        if not result.error and self.current_token.type != tokens.TT_EOF:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Wuz expectin' a valid statement"
             ))
         return result
 
     def optinal_newline(self, result):
-        while self.current_token.type == TT_NEWLINE:
+        while self.current_token.type == tokens.TT_NEWLINE:
             result.register_advancement()
             self.advance()
 
@@ -103,7 +103,7 @@ class Parser:
         more_statements = True
         while True:
             newline_count = 0
-            while self.current_token.type == TT_NEWLINE:
+            while self.current_token.type == tokens.TT_NEWLINE:
                 result.register_advancement()
                 self.advance()
                 newline_count += 1
@@ -119,7 +119,7 @@ class Parser:
                 continue
             statements.append(statement)
 
-        return result.success(ListNode(
+        return result.success(nodes.ListNode(
             statements,
             pos_start,
             self.current_token.pos_end.copy()
@@ -130,7 +130,7 @@ class Parser:
 
         expression = result.register(self.expression(is_fettle, False))
         if result.error:
-            return result.failure(VexedError(
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Wuz expectin' a valid statement"
             ))
@@ -141,8 +141,8 @@ class Parser:
         cases = []
         else_case = None
 
-        if not self.current_token.matches(TT_KEYWORD, 'if'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'if'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'if'?"
             ))
@@ -157,8 +157,8 @@ class Parser:
         # optional newlines
         self.optinal_newline(result)
 
-        if not self.current_token.matches(TT_KEYWORD, 'then'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'then'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'then'?"
             ))
@@ -181,7 +181,7 @@ class Parser:
 
         #####################################################
 
-        while self.current_token.matches(TT_KEYWORD, 'when'):
+        while self.current_token.matches(tokens.TT_KEYWORD, 'when'):
             result.register_advancement()
             self.advance()
 
@@ -195,8 +195,8 @@ class Parser:
             # optional newlines
             self.optinal_newline(result)
 
-            if not self.current_token.matches(TT_KEYWORD, 'then'):
-                return result.failure(VexedError(
+            if not self.current_token.matches(tokens.TT_KEYWORD, 'then'):
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz 'then'?"
                 ))
@@ -219,7 +219,7 @@ class Parser:
         # optional newlines
         self.optinal_newline(result)
 
-        if self.current_token.matches(TT_KEYWORD, 'else'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'else'):
             result.register_advancement()
             self.advance()
 
@@ -237,8 +237,8 @@ class Parser:
 
             #####################################################
 
-        if not self.current_token.matches(TT_KEYWORD, 'oer'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'oer'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'oer'?"
             ))
@@ -246,7 +246,7 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        return result.success(IfNode(cases, else_case))
+        return result.success(nodes.IfNode(cases, else_case))
 
     def call(self):
         result = ParseResult()
@@ -254,24 +254,24 @@ class Parser:
         if result.error:
             return result
 
-        if self.current_token.type == TT_LBRACK:
+        if self.current_token.type == tokens.TT_LBRACK:
             result.register_advancement()
             self.advance()
             arg_nodes = []
 
-            if self.current_token.type == TT_RBRACK:
+            if self.current_token.type == tokens.TT_RBRACK:
                 result.register_advancement()
                 self.advance()
             else:
                 arg_nodes.append(result.register(
                     self.expression(is_call=True)))
                 if result.error:
-                    return result.failure(VexedError(
+                    return result.failure(errors.VexedError(
                         self.current_token.pos_start, self.current_token.pos_end,
                         "Wuz expectin' a valid statement"
                     ))
 
-                while self.current_token.type == TT_COMMA:
+                while self.current_token.type == tokens.TT_COMMA:
                     result.register_advancement()
                     self.advance()
 
@@ -279,139 +279,139 @@ class Parser:
                     if result.error:
                         return result
 
-                if self.current_token.type != TT_RBRACK:
-                    return result.failure(VexedError(
+                if self.current_token.type != tokens.TT_RBRACK:
+                    return result.failure(errors.VexedError(
                         self.current_token.pos_start, self.current_token.pos_end,
                         f"Weerz ',' or ')'?"
                     ))
 
                 result.register_advancement()
                 self.advance()
-            return result.success(CallNode(atom, arg_nodes))
+            return result.success(nodes.CallNode(atom, arg_nodes))
         return result.success(atom)
 
     def atom(self):
         result = ParseResult()
         token = self.current_token
 
-        if token.type in (TT_INT, TT_FLOAT):
+        if token.type in (tokens.TT_INT, tokens.TT_FLOAT):
             result.register_advancement()
             self.advance()
-            return result.success(NumberNode(token))
+            return result.success(nodes.NumberNode(token))
 
-        elif token.type in TT_SCRIPT:
+        elif token.type in tokens.TT_SCRIPT:
             result.register_advancement()
             self.advance()
-            return result.success(ScriptNode(token))
+            return result.success(nodes.ScriptNode(token))
 
-        elif token.type in TT_LETTER:
+        elif token.type in tokens.TT_LETTER:
             result.register_advancement()
             self.advance()
-            return result.success(LetterNode(token))
+            return result.success(nodes.LetterNode(token))
 
-        elif token.type == TT_KEYWORD and (token.value == 'Number' or token.value == 'Script' or token.value == 'Letter' or token.value == 'Answer' or token.value == 'List' or token.value == 'Bodger'):
+        elif token.type == tokens.TT_KEYWORD and (token.value == 'Number' or token.value == 'Script' or token.value == 'Letter' or token.value == 'Answer' or token.value == 'List' or token.value == 'Bodger'):
             result.register_advancement()
             self.advance()
-            return result.success(NowtNode(token))
+            return result.success(nodes.NowtNode(token))
 
-        elif token.type == TT_ANSWER:
+        elif token.type == tokens.TT_ANSWER:
             result.register_advancement()
             self.advance()
-            return result.success(AnswerNode(token))
+            return result.success(nodes.AnswerNode(token))
 
-        elif token.type == TT_IDENTIFIER:
+        elif token.type == tokens.TT_IDENTIFIER:
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type == TT_CALL:
+            if self.current_token.type == tokens.TT_CALL:
                 return self.bodger_call(result, token)
 
-            if self.current_token.type == TT_LEFT_SQUARE_BRACK:
+            if self.current_token.type == tokens.TT_LEFT_SQUARE_BRACK:
                 return self.id_rbrack(result, token)
 
-            return result.success(VarAccessNode(token))
+            return result.success(nodes.VarAccessNode(token))
 
-        elif token.type == TT_LBRACK:
+        elif token.type == tokens.TT_LBRACK:
             result.register_advancement()
             self.advance()
             expression = result.register(self.expression())
             if result.error:
                 return result
-            if self.current_token.type == TT_RBRACK:
+            if self.current_token.type == tokens.TT_RBRACK:
                 result.register_advancement()
                 self.advance()
                 return result.success(expression)
             else:
-                return result.failure(VexedError(
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz ')'?"
                 ))
-        elif token.type == TT_LEFT_SQUARE_BRACK:
+        elif token.type == tokens.TT_LEFT_SQUARE_BRACK:
             list_expression = result.register(self.list_expression())
             if result.error:
                 return result
             return result.success(list_expression)
 
-        elif token.matches(TT_KEYWORD, 'if'):
+        elif token.matches(tokens.TT_KEYWORD, 'if'):
             if_expression = result.register(self.if_expression())
             if result.error:
                 return result
             return result.success(if_expression)
 
-        elif token.matches(TT_KEYWORD, 'while'):
+        elif token.matches(tokens.TT_KEYWORD, 'while'):
             while_expression = result.register(self.while_expression())
             if result.error:
                 return result
             return result.success(while_expression)
 
-        elif token.matches(TT_KEYWORD, 'gowon'):
+        elif token.matches(tokens.TT_KEYWORD, 'gowon'):
             gowon_expression = result.register(self.gowon_expression())
             if result.error:
                 return result
             return result.success(gowon_expression)
 
-        elif token.matches(TT_KEYWORD, 'fettle'):
+        elif token.matches(tokens.TT_KEYWORD, 'fettle'):
             func_def = result.register(self.function_def())
             if result.error:
                 return result
             return result.success(func_def)
 
-        elif token.matches(TT_KEYWORD, 'gander'):
+        elif token.matches(tokens.TT_KEYWORD, 'gander'):
             gander_res = result.register(self.gander_res())
             if result.error:
                 return result
             return result.success(gander_res)
 
-        elif token.matches(TT_KEYWORD, 'wang'):
+        elif token.matches(tokens.TT_KEYWORD, 'wang'):
             wang_res = result.register(self.wang_res())
             if result.error:
                 return result
             return result.success(wang_res)
 
-        elif self.current_token.matches(TT_KEYWORD, 'sithee'):
+        elif self.current_token.matches(tokens.TT_KEYWORD, 'sithee'):
             result.register_advancement()
             self.advance()
-            return result.success(SitheeNode(self.current_token))
+            return result.success(nodes.SitheeNode(self.current_token))
 
-        elif self.current_token.matches(TT_KEYWORD, 'sithi'):
+        elif self.current_token.matches(tokens.TT_KEYWORD, 'sithi'):
             result.register_advancement()
             self.advance()
-            return result.success(SitheeNode(self.current_token))
+            return result.success(nodes.SitheeNode(self.current_token))
 
-        elif token.matches(TT_KEYWORD, 'allus'):
+        elif token.matches(tokens.TT_KEYWORD, 'allus'):
             allus_res = result.register(self.allus_res())
             if result.error:
                 return result
             return result.success(allus_res)
 
-        elif self.current_token.matches(TT_KEYWORD, 'missen'):
+        elif self.current_token.matches(tokens.TT_KEYWORD, 'missen'):
             token = self.current_token
             result.register_advancement()
             self.advance()
 
-            return result.success(MissenNode(token))
+            return result.success(nodes.MissenNode(token))
 
-        return result.failure(VexedError(
+        return result.failure(errors.VexedError(
             token.pos_start, token.pos_end,
             "Wuz expectin' a valid statement"
         ))
@@ -421,8 +421,8 @@ class Parser:
         element_nodes = []
         pos_start = self.current_token.pos_start.copy()
 
-        if self.current_token.type != TT_LEFT_SQUARE_BRACK:
-            return result.failure(VexedError(
+        if self.current_token.type != tokens.TT_LEFT_SQUARE_BRACK:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz '['?"
             ))
@@ -430,18 +430,18 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type == TT_RIGHT_SQUARE_BRACK:
+        if self.current_token.type == tokens.TT_RIGHT_SQUARE_BRACK:
             result.register_advancement()
             self.advance()
         else:
             element_nodes.append(result.register(self.expression()))
             if result.error:
-                return result.failure(VexedError(
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Wuz expectin' a valid statement"
                 ))
 
-            while self.current_token.type == TT_COMMA:
+            while self.current_token.type == tokens.TT_COMMA:
                 result.register_advancement()
                 self.advance()
 
@@ -449,8 +449,8 @@ class Parser:
                 if result.error:
                     return result
 
-            if self.current_token.type != TT_RIGHT_SQUARE_BRACK:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_RIGHT_SQUARE_BRACK:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz ',' or ']'?"
                 ))
@@ -458,7 +458,7 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-        return result.success(ListNode(
+        return result.success(nodes.ListNode(
             element_nodes,
             pos_start,
             self.current_token.pos_end.copy()
@@ -468,27 +468,27 @@ class Parser:
         result = ParseResult()
         token = self.current_token
 
-        if token.type in (TT_PLUS, TT_MINUS):
+        if token.type in (tokens.TT_PLUS, tokens.TT_MINUS):
             result.register_advancement()
             self.advance()
             factor = result.register(self.factor())
             if result.error:
                 return result
-            return result.success(UnaryOpNode(token, factor))
+            return result.success(nodes.UnaryOpNode(token, factor))
 
         # return self.atom()
         return self.call()
 
     def term(self):  # two factors or expressios between *, / or %
-        return self.binary_op(self.factor, (TT_MUL, TT_DIV, TT_MOD))
+        return self.binary_op(self.factor, (tokens.TT_MUL, tokens.TT_DIV, tokens.TT_MOD))
 
     def arithmetic_expression(self):
-        return self.binary_op(self.term, (TT_PLUS, TT_MINUS, TT_CONCAT_APPEND, TT_CALL))
+        return self.binary_op(self.term, (tokens.TT_PLUS, tokens.TT_MINUS, tokens.TT_CONCAT_APPEND, tokens.TT_CALL))
 
     def comparison_expression(self):
         result = ParseResult()
 
-        if self.current_token.matches(TT_KEYWORD, 'not'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'not'):
             op_token = self.current_token
             result.register_advancement()
             self.advance()
@@ -496,23 +496,23 @@ class Parser:
             node = result.register(self.comparison_expression())
             if result.error:
                 return result
-            return result.success(UnaryOpNode(op_token, node))
+            return result.success(nodes.UnaryOpNode(op_token, node))
 
         node = result.register(
             self.binary_op(
                 self.arithmetic_expression, (
-                    TT_EQUALS,
-                    TT_NOT_EQUALS,
-                    TT_LESS_THAN,
-                    TT_GREATER_THAN,
-                    TT_LESS_THAN_EQUALS,
-                    TT_GREATER_THAN_EQUALS
+                    tokens.TT_EQUALS,
+                    tokens.TT_NOT_EQUALS,
+                    tokens.TT_LESS_THAN,
+                    tokens.TT_GREATER_THAN,
+                    tokens.TT_LESS_THAN_EQUALS,
+                    tokens.TT_GREATER_THAN_EQUALS
                 )
             )
         )
 
         if result.error:
-            return result.failure(VexedError(
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Wuz expectin' a valid statement"
             ))
@@ -522,12 +522,12 @@ class Parser:
     def var_assign(self, result, init_var_name, is_summat, is_fettle=False):
         var_names = [init_var_name]  # start it as a list
 
-        while self.current_token.type == TT_COMMA:
+        while self.current_token.type == tokens.TT_COMMA:
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type != TT_IDENTIFIER:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_IDENTIFIER:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz t' identifier?"
                 ))
@@ -537,8 +537,8 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-        if self.current_token.type != TT_VAR_COMPLETE and self.current_token.type != TT_VAR_DECLARE:
-            return result.failure(VexedError(
+        if self.current_token.type != tokens.TT_VAR_COMPLETE and self.current_token.type != tokens.TT_VAR_DECLARE:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Weerz ':=', or ':'?"
             ))
@@ -552,44 +552,44 @@ class Parser:
         if result.error:
             return result
 
-        if assign_type == TT_VAR_DECLARE:  # if declare type then has to be a Nowt: List, Number, Script, Letter or Answer
-            if isinstance(expression, VarAccessNode):
+        if assign_type == tokens.TT_VAR_DECLARE:  # if declare type then has to be a Nowt: List, Number, Script, Letter or Answer
+            if isinstance(expression, nodes.VarAccessNode):
                 result.register_reverse()
                 self.reverse()
 
-                return result.failure(VexedError(
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz a Number, List, Answer, Script or Letter?"
                 ))
-            if not expression.token.matches(TT_KEYWORD, 'Number') and expression.token.matches(TT_KEYWORD, 'List' and expression.token.matches(TT_KEYWORD, 'Script') and expression.token.matches(TT_KEYWORD, 'Letter') and expression.token.matches(TT_KEYWORD, 'Answer')):
+            if not expression.token.matches(tokens.TT_KEYWORD, 'Number') and expression.token.matches(tokens.TT_KEYWORD, 'List' and expression.token.matches(tokens.TT_KEYWORD, 'Script') and expression.token.matches(tokens.TT_KEYWORD, 'Letter') and expression.token.matches(tokens.TT_KEYWORD, 'Answer')):
                 result.register_reverse()
                 self.reverse()
 
-                return result.failure(VexedError(
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz a Number, List, Answer, Script or Letter?"
                 ))
 
-        var_names = List(var_names)
+        var_names = values.List(var_names)
 
         if is_summat:
-            return result.success(VarAssignNode(var_names, expression))
-        return result.success(VarAssignOldNode(var_names, expression))
+            return result.success(nodes.VarAssignNode(var_names, expression))
+        return result.success(nodes.VarAssignOldNode(var_names, expression))
 
     def id_rbrack(self, result, var_name):
         result.register_advancement()
         self.advance()
 
-        if not (self.current_token.type == TT_INT or self.current_token.type == TT_IDENTIFIER):
-            return result.failure(VexedError(
+        if not (self.current_token.type == tokens.TT_INT or self.current_token.type == tokens.TT_IDENTIFIER):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Weerz proper Number?"
             ))
 
         index = result.register(self.expression())
 
-        if not self.current_token.type == TT_RIGHT_SQUARE_BRACK:
-            return result.failure(VexedError(
+        if not self.current_token.type == tokens.TT_RIGHT_SQUARE_BRACK:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Weerz proper Number?"
             ))
@@ -597,7 +597,7 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type == TT_VAR_COMPLETE:
+        if self.current_token.type == tokens.TT_VAR_COMPLETE:
             result.register_advancement()
             self.advance()
 
@@ -605,21 +605,21 @@ class Parser:
             if result.error:
                 return result
 
-            return result.success(PartScriptAssignNode(var_name, index, expression))
+            return result.success(nodes.PartScriptAssignNode(var_name, index, expression))
 
-        return result.success(PartScriptNode(var_name, index))
+        return result.success(nodes.PartScriptNode(var_name, index))
 
     # entire expression of terms and factors (seperate expressions between brackets) + KEYWORDS
 
     def expression(self, is_fettle=False, is_call=False):
         result = ParseResult()
 
-        if self.current_token.matches(TT_KEYWORD, 'eyup'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'eyup'):
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type != TT_IDENTIFIER:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_IDENTIFIER:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz identifier?"
                 ))
@@ -629,14 +629,14 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-            return result.success(BodgerChangeNode(bodger_to_change))
+            return result.success(nodes.BodgerChangeNode(bodger_to_change))
 
-        if self.current_token.matches(TT_KEYWORD, 'bodger'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'bodger'):
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type != TT_IDENTIFIER:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_IDENTIFIER:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz identifier?"
                 ))
@@ -646,30 +646,30 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-            return result.success(AddBodgerNode(bodger_to_add))
+            return result.success(nodes.AddBodgerNode(bodger_to_add))
 
         ######################
 
-        if self.current_token.type == TT_IDENTIFIER:  # already assigned var check
+        if self.current_token.type == tokens.TT_IDENTIFIER:  # already assigned var check
             var_name = self.current_token
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type == TT_VAR_COMPLETE:
+            if self.current_token.type == tokens.TT_VAR_COMPLETE:
                 return self.var_assign(result, var_name, False, is_fettle)
 
-            if self.current_token.type == TT_COMMA and not is_call:
+            if self.current_token.type == tokens.TT_COMMA and not is_call:
                 return self.var_assign(result, var_name, False)
 
             result.register_reverse()
             self.reverse()
 
-        if self.current_token.matches(TT_KEYWORD, 'forget'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'forget'):
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type != TT_IDENTIFIER:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_IDENTIFIER:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz identifier?"
                 ))
@@ -678,14 +678,14 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-            return result.success(VarForgetNode(var_name))
+            return result.success(nodes.VarForgetNode(var_name))
 
-        if self.current_token.matches(TT_KEYWORD, 'summat'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'summat'):
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type != TT_IDENTIFIER:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_IDENTIFIER:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     "Weerz identifier?"
                 ))
@@ -698,10 +698,10 @@ class Parser:
 
         # node = result.register(self.binary_op(self.term, (TT_PLUS, TT_MINUS)))
         node = result.register(self.binary_op(
-            self.comparison_expression, ((TT_KEYWORD, 'and'), (TT_KEYWORD, 'or'))))
+            self.comparison_expression, ((tokens.TT_KEYWORD, 'and'), (tokens.TT_KEYWORD, 'or'))))
 
         if result.error:
-            return result.failure(VexedError(
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 "Wuz expectin' a valid statement"
             ))
@@ -716,20 +716,20 @@ class Parser:
         if result.error:
             return result
 
-        if self.current_token.type == TT_VAR_COMPLETE or self.current_token.type == TT_VAR_DECLARE:
+        if self.current_token.type == tokens.TT_VAR_COMPLETE or self.current_token.type == tokens.TT_VAR_DECLARE:
             print("DFFDFD")
-            return result.failure(VexedError(
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"faffin' wi' {bodger_name}.{atom}"
             ))
 
-        return result.success(BodgerCallNode(bodger_name, atom))
+        return result.success(nodes.BodgerCallNode(bodger_name, atom))
 
     def while_expression(self):
         result = ParseResult()
 
-        if not self.current_token.matches(TT_KEYWORD, 'while'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'while'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'while'?"
             ))
@@ -744,8 +744,8 @@ class Parser:
         # optional newlines
         self.optinal_newline(result)
 
-        if not self.current_token.matches(TT_KEYWORD, 'gowon'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'gowon'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'gowon'?"
             ))
@@ -767,8 +767,8 @@ class Parser:
 
         #####################################################
 
-        if not self.current_token.matches(TT_KEYWORD, 'oer'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'oer'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'oer'?"
             ))
@@ -776,13 +776,13 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        return result.success(WhileNode(condition, body))
+        return result.success(nodes.WhileNode(condition, body))
 
     def gowon_expression(self):
         result = ParseResult()
 
-        if not self.current_token.matches(TT_KEYWORD, 'gowon'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'gowon'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'gowon'?"
             ))
@@ -804,8 +804,8 @@ class Parser:
 
         #####################################################
 
-        if not self.current_token.matches(TT_KEYWORD, 'while'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'while'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'while'?"
             ))
@@ -823,8 +823,8 @@ class Parser:
         # optional newlines
         self.optinal_newline(result)
 
-        if not self.current_token.matches(TT_KEYWORD, 'oer'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'oer'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'oer'?"
             ))
@@ -832,7 +832,7 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        return result.success(GowonNode(body, condition))
+        return result.success(nodes.GowonNode(body, condition))
 
     def gander_res(self):
         result = ParseResult()
@@ -840,20 +840,20 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type == TT_EOF:
-            token = Token(TT_IDENTIFIER, current_bodger.CURRENT_BODGER.name,
+        if self.current_token.type == tokens.TT_EOF:
+            token = tokens.Token(tokens.TT_IDENTIFIER, bodgers.CURRENT_BODGER.name,
                           self.current_token.pos_start, self.current_token.pos_end)
-            return result.success(GanderNode(token))
+            return result.success(nodes.GanderNode(token))
 
-        if self.current_token.matches(TT_KEYWORD, "missen"):
+        if self.current_token.matches(tokens.TT_KEYWORD, "missen"):
             result.register_advancement()
             self.advance()
-            token = Token(TT_IDENTIFIER, current_bodger.CURRENT_BODGER.name,
+            token = tokens.Token(tokens.TT_IDENTIFIER, bodgers.CURRENT_BODGER.name,
                           self.current_token.pos_start, self.current_token.pos_end)
-            return result.success(GanderNode(token))
+            return result.success(nodes.GanderNode(token))
 
-        if self.current_token.type != TT_IDENTIFIER:
-            return result.failure(VexedError(
+        if self.current_token.type != tokens.TT_IDENTIFIER:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz idenfifier?"
             ))
@@ -863,7 +863,7 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        return result.success(GanderNode(bodger_to_gander))
+        return result.success(nodes.GanderNode(bodger_to_gander))
 
     def wang_res(self):
         result = ParseResult()
@@ -875,7 +875,7 @@ class Parser:
         if result.error:
             return result
 
-        return result.success(WangNode(condition))
+        return result.success(nodes.WangNode(condition))
 
     def allus_res(self):
         result = ParseResult()
@@ -887,13 +887,13 @@ class Parser:
         if result.error:
             return result
 
-        return result.success(AllusNode(value))
+        return result.success(nodes.AllusNode(value))
 
     def function_def(self):
         result = ParseResult()
 
-        if not self.current_token.matches(TT_KEYWORD, 'fettle'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'fettle'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'fettle'?"
             ))
@@ -901,8 +901,8 @@ class Parser:
         result.register_advancement()
         self.advance()
 
-        if self.current_token.type != TT_IDENTIFIER:
-            return result.failure(VexedError(
+        if self.current_token.type != tokens.TT_IDENTIFIER:
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz idenfifier?"
             ))
@@ -912,11 +912,11 @@ class Parser:
         self.advance()
 
         arg_dict = {}
-        if self.current_token.type == TT_LBRACK:
+        if self.current_token.type == tokens.TT_LBRACK:
             result.register_advancement()
             self.advance()
 
-            if self.current_token.type == TT_IDENTIFIER:
+            if self.current_token.type == tokens.TT_IDENTIFIER:
                 while True:  # while true break used so code is run at least once
                     init_token = self.current_token
                     result.register_advancement()
@@ -928,14 +928,14 @@ class Parser:
 
                     for token in result.node.var_name_tokens.elements:
                         arg_dict[token] = result.node.value_node.token.value
-                    if self.current_token.type == TT_COMMA:
+                    if self.current_token.type == tokens.TT_COMMA:
                         result.register_advancement()
                         self.advance()
                     else:
                         break
 
-            if self.current_token.type != TT_RBRACK:
-                return result.failure(VexedError(
+            if self.current_token.type != tokens.TT_RBRACK:
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz identifier or ')'?"
                 ))
@@ -944,15 +944,15 @@ class Parser:
             self.advance()
 
         static_type_return = None
-        if self.current_token.type == TT_VAR_DECLARE:
+        if self.current_token.type == tokens.TT_VAR_DECLARE:
             result.register_advancement()
             self.advance()
             
-            if not (self.current_token.matches(TT_KEYWORD, 'Number') or self.current_token.matches(TT_KEYWORD, 'List') or self.current_token.matches(TT_KEYWORD, 'Answer') or self.current_token.matches(TT_KEYWORD, 'Script') or self.current_token.matches(TT_KEYWORD, 'Bodger') or self.current_token.matches(TT_KEYWORD, 'Letter')):
+            if not (self.current_token.matches(tokens.TT_KEYWORD, 'Number') or self.current_token.matches(tokens.TT_KEYWORD, 'List') or self.current_token.matches(tokens.TT_KEYWORD, 'Answer') or self.current_token.matches(tokens.TT_KEYWORD, 'Script') or self.current_token.matches(tokens.TT_KEYWORD, 'Bodger') or self.current_token.matches(tokens.TT_KEYWORD, 'Letter')):
                 result.register_reverse()
                 self.reverse()
 
-                return result.failure(VexedError(
+                return result.failure(errors.VexedError(
                     self.current_token.pos_start, self.current_token.pos_end,
                     f"Weerz a Number, List, Answer, Script, Bodger or Letter?"
                 ))
@@ -961,19 +961,19 @@ class Parser:
             result.register_advancement()
             self.advance()
 
-        if self.current_token.matches(TT_KEYWORD, 'gioer'):
+        if self.current_token.matches(tokens.TT_KEYWORD, 'gioer'):
             result.register_advancement()
             self.advance()
-            return result.success(FuncDefNode(
+            return result.success(nodes.FuncDefNode(
                 var_name_token,
                 arg_dict,
-                ListNode(NowtNode(Token("nowt", pos_start=self.current_token.pos_start)),
+                nodes.ListNode(nodes.NowtNode(tokens.Token("nowt", pos_start=self.current_token.pos_start)),
                          self.current_token.pos_start, self.current_token.pos_end),
                 static_type_return
             ))
 
-        if not self.current_token.matches(TT_KEYWORD, 'giz'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'giz'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz giz?"
             ))
@@ -994,15 +994,15 @@ class Parser:
         self.optinal_newline(result)
         #####################################################
 
-        if not self.current_token.matches(TT_KEYWORD, 'oer'):
-            return result.failure(VexedError(
+        if not self.current_token.matches(tokens.TT_KEYWORD, 'oer'):
+            return result.failure(errors.VexedError(
                 self.current_token.pos_start, self.current_token.pos_end,
                 f"Weerz 'oer'?"
             ))
         result.register_advancement()
         self.advance()
 
-        final_node = FuncDefNode(
+        final_node = nodes.FuncDefNode(
             var_name_token,
             arg_dict,
             nodes_to_execute,
@@ -1029,6 +1029,6 @@ class Parser:
             right = result.register(function_b())
             if result.error:
                 return result
-            left = BinaryOpNode(left, op_token, right)
+            left = nodes.BinaryOpNode(left, op_token, right)
 
         return result.success(left)

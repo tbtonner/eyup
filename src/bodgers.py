@@ -1,8 +1,8 @@
 import values
 import interpreter
-from nodes import AllusNode
-from tokens import Tokenise
-from parse import Parser
+import  nodes
+import tokens
+import parse
 
 #######################################
 # CONTEXT
@@ -35,7 +35,7 @@ class SymbolTable:
 
     def set(self, name, value, allus=False):
         if allus:
-            self.symbols[name] = AllusNode(value)
+            self.symbols[name] = nodes.AllusNode(value)
         else:
             self.symbols[name] = value
 
@@ -45,7 +45,7 @@ class SymbolTable:
     def copySymbols(self):
         new_dict = {}
         for symbol, value in self.symbols.items():
-            if not isinstance(value, AllusNode):
+            if not isinstance(value, nodes.AllusNode):
                 new_dict[symbol] = value.copy()
             else:
                 new_dict[symbol] = value
@@ -66,13 +66,13 @@ class Bodger():
 
     def run(self, text):
         # tokenise input string
-        tokeniser = Tokenise(text)
-        tokens, error = tokeniser.make_tokens()
+        tokeniser = tokens.Tokenise(text)
+        tokens_, error = tokeniser.make_tokens()
         if error:
             return None, error
 
         # generate abstract syntax tree (AST) - parse tokens
-        parser = Parser(tokens)
+        parser = parse.Parser(tokens_)
         ast = parser.parse()
         if ast.error:
             return None, ast.error
@@ -182,3 +182,5 @@ PolyMath.context.symbol_table.set("Gaffer", values.BodgerVal(Gaffer), True)
 PolyMath.context.symbol_table.set("TrigMath", values.BodgerVal(TrigMath), True)
 PolyMath.context.symbol_table.set("LogMath", values.BodgerVal(LogMath), True)
 PolyMath.context.symbol_table.set("PolyMath", values.BodgerVal(PolyMath), True)
+
+CURRENT_BODGER = Gaffer

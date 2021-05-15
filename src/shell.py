@@ -1,4 +1,4 @@
-import current_bodger
+import bodgers
 
 #######################################
 # SHELL
@@ -69,14 +69,14 @@ if __name__ == "__main__":
     inputs = []
     while True:
         try: # can't break system -> will just catch as an error
-            inputs.append(input(f'{current_bodger.CURRENT_BODGER.name}> '))
+            inputs.append(input(f'{bodgers.CURRENT_BODGER.name}> '))
             if start_multiline(inputs[-1]):
                 inputs[-1] = new_statement(inputs[-1], 1)
             if inputs[-1].strip() == "":
                 continue
 
             # main run command
-            result, error = current_bodger.CURRENT_BODGER.run(inputs[-1])
+            result, error = bodgers.CURRENT_BODGER.run(inputs[-1])
 
             if error:
                 print(error.as_string())

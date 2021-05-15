@@ -1,9 +1,8 @@
 import math
 import bodgers
-import current_bodger
 import interpreter
-from nodes import NowtNode, WangNode
-from errors import FlummoxedError
+import nodes
+import errors 
 
 #######################################
 # VALUES
@@ -85,7 +84,7 @@ class Value:
     def illegal_operation(self, other=None):
         if not other:
             other = self
-        return FlummoxedError(
+        return errors.FlummoxedError(
             self.pos_start, other.pos_end,
             f"Can't do that meddlin'",
             self.context
@@ -249,7 +248,7 @@ class Number(Value):
     def divided_by(self, other):
         if isinstance(other, Number):
             if other.value == 0:
-                return None, FlummoxedError(
+                return None, errors.FlummoxedError(
                     other.pos_start, other.pos_end,
                     'Division by zero',
                     self.context
@@ -337,7 +336,7 @@ class List(Value):
                 new_list.elements.pop(other.value)
                 return new_list, None
             except:
-                return None, FlummoxedError(
+                return None, errors.FlummoxedError(
                     other.pos_start, other.pos_end,
                     f"'{other.value}' tis out'v range of {self.elements}",
                     self.context
@@ -382,7 +381,7 @@ class BaseFunction(Value):
                     type(args[-(i+1)]).__name__ + ", "
             string = string[:len(string) - 2]
 
-            return result.failure(FlummoxedError(
+            return result.failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{self.name} wi' traipsin' {string}",
                 self.context
@@ -400,7 +399,7 @@ class BaseFunction(Value):
                         string += str(current.value) + ":" + str(arg_list_dict[current]) + ", "
                 string = string[:len(string) - 2]
 
-            return result.failure(FlummoxedError(
+            return result.failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{self.name} bah't {string}",
                 self.context
@@ -420,7 +419,7 @@ class BaseFunction(Value):
             new_type = interpreter.Interpreter.eyupise_value(
                 result, args[iterator])
             if old_type != new_type:
-                return result.failure(FlummoxedError(
+                return result.failure(errors.FlummoxedError(
                     self.pos_start, self.pos_end,
                     f"Check yer types pal! {new_type} ain't the same as {old_type}",
                     self.context
@@ -482,12 +481,12 @@ class Function(BaseFunction):
         if result.error:
             return result
 
-        if not isinstance(self.body_nodes.element_nodes, NowtNode):
+        if not isinstance(self.body_nodes.element_nodes, nodes.NowtNode):
             for _node in self.body_nodes.element_nodes:
-                if isinstance(_node, WangNode):
+                if isinstance(_node, nodes.NowtNodeWangNode):
                     temp = _interpreter.visit(_node, execution_context)
                     if temp.error:
-                        return result.failure(FlummoxedError(
+                        return result.failure(errors.FlummoxedError(
                             self.pos_start, _node.pos_end,
                             f"Wangged condition: {_node.condition} is aye",
                             self.context
@@ -504,7 +503,7 @@ class Function(BaseFunction):
         value_type = interpreter.Interpreter.eyupise_value(result, self.value)
         if self.static_type_return is not None:
             if self.static_type_return != value_type:
-                return result.failure(FlummoxedError(
+                return result.failure(errors.FlummoxedError(
                     self.pos_start, self.pos_end,
                     f"Check yer types pal! {self.static_type_return} ain't the same as {value_type}",
                     self.context
@@ -520,7 +519,7 @@ class Function(BaseFunction):
         return copy
 
     def __repr__(self):
-        return f"{current_bodger.CURRENT_BODGER.name}.{self.name}"
+        return f"{bodgers.CURRENT_BODGER.name}.{self.name}"
 
 
 class BuiltInFunction(BaseFunction):
@@ -639,7 +638,7 @@ class BuiltInFunction(BaseFunction):
         # getting the value -> validating input is str or num
         value_to_convert = execution_context.symbol_table.get("value")
         if not isinstance(value_to_convert, Script) and not isinstance(value_to_convert, Number) and not isinstance(value_to_convert, Letter):
-            return result.failure(FlummoxedError(
+            return result.failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{value_to_convert} ain't a script, number or letter",
                 execution_context
@@ -650,7 +649,7 @@ class BuiltInFunction(BaseFunction):
         try:
             number = float(value_to_convert)
         except ValueError:
-            return result.failure(FlummoxedError(
+            return result.failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{value_to_convert} ain't a number",
                 execution_context
@@ -666,7 +665,7 @@ class BuiltInFunction(BaseFunction):
         # getting the value -> validating input is str or num
         value_to_convert = execution_context.symbol_table.get("value")
         if not isinstance(value_to_convert, Script) and not isinstance(value_to_convert, Number) and not isinstance(value_to_convert, Letter) and not isinstance(value_to_convert, List):
-            return result.failure(FlummoxedError(
+            return result.failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{value_to_convert} ain't a script, number, list or letter",
                 execution_context
@@ -684,7 +683,7 @@ class BuiltInFunction(BaseFunction):
         value = execution_context.symbol_table.get("value")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
@@ -699,14 +698,14 @@ class BuiltInFunction(BaseFunction):
         index = execution_context.symbol_table.get("index")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
             ))
 
         if not isinstance(index, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{index} ain't no Number",
                 execution_context
@@ -715,7 +714,7 @@ class BuiltInFunction(BaseFunction):
         try:
             element = list_.elements.pop(index.value)
         except:
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"'{index}' tis out'v range of {list_}",
                 execution_context
@@ -728,14 +727,14 @@ class BuiltInFunction(BaseFunction):
         value = execution_context.symbol_table.get("value")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
             ))
 
         if not (isinstance(value, Number) or isinstance(value, Script) or isinstance(value, Letter) or isinstance(value, Answer)):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{value} ain't no number, script, letter or answer",
                 execution_context
@@ -753,7 +752,7 @@ class BuiltInFunction(BaseFunction):
         list_ = execution_context.symbol_table.get("list")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
@@ -768,7 +767,7 @@ class BuiltInFunction(BaseFunction):
         list_ = execution_context.symbol_table.get("list")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
@@ -783,14 +782,14 @@ class BuiltInFunction(BaseFunction):
         other_list = execution_context.symbol_table.get("other_list")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
             ))
 
         if not isinstance(other_list, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{other_list} ain't no list",
                 execution_context
@@ -806,14 +805,14 @@ class BuiltInFunction(BaseFunction):
         values = execution_context.symbol_table.get("values")
 
         if not isinstance(list_, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{list_} ain't no list",
                 execution_context
             ))
 
         if not isinstance(values, List):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 f"{values} ain't no list",
                 execution_context
@@ -824,7 +823,7 @@ class BuiltInFunction(BaseFunction):
         for value in values.elements:
             try:
                 if not isinstance(value, Number):
-                    return interpreter.RTResult().failure(FlummoxedError(
+                    return interpreter.RTResult().failure(errors.FlummoxedError(
                         self.pos_start, self.pos_end,
                         f"{value} ain't no Number",
                         execution_context
@@ -832,7 +831,7 @@ class BuiltInFunction(BaseFunction):
                 value = value.value
                 elements.append(list_.elements[value])
             except:
-                return interpreter.RTResult().failure(FlummoxedError(
+                return interpreter.RTResult().failure(errors.FlummoxedError(
                     self.pos_start, self.pos_end,
                     f"'{value}' tis out'v range of {list_}",
                     execution_context
@@ -845,7 +844,7 @@ class BuiltInFunction(BaseFunction):
     def execute_sin(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -858,7 +857,7 @@ class BuiltInFunction(BaseFunction):
     def execute_cos(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -871,7 +870,7 @@ class BuiltInFunction(BaseFunction):
     def execute_tan(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -886,7 +885,7 @@ class BuiltInFunction(BaseFunction):
         b = execution_context.symbol_table.get("b")
 
         if not (isinstance(a, Number) and isinstance(b, Number)):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{a} and/or {b} ain't a number",
                 execution_context
@@ -899,7 +898,7 @@ class BuiltInFunction(BaseFunction):
     def execute_degrees(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -912,7 +911,7 @@ class BuiltInFunction(BaseFunction):
     def execute_radians(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -925,7 +924,7 @@ class BuiltInFunction(BaseFunction):
     def execute_asin(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -938,7 +937,7 @@ class BuiltInFunction(BaseFunction):
     def execute_acos(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -951,7 +950,7 @@ class BuiltInFunction(BaseFunction):
     def execute_atan(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -965,7 +964,7 @@ class BuiltInFunction(BaseFunction):
     def execute_log(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -978,7 +977,7 @@ class BuiltInFunction(BaseFunction):
     def execute_log2(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -991,7 +990,7 @@ class BuiltInFunction(BaseFunction):
     def execute_log10(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -1005,7 +1004,7 @@ class BuiltInFunction(BaseFunction):
         number = execution_context.symbol_table.get("value")
         base = execution_context.symbol_table.get("base")
         if not (isinstance(number, Number) and isinstance(base, Number)):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} and/or {base} ain't a number",
                 execution_context
@@ -1020,7 +1019,7 @@ class BuiltInFunction(BaseFunction):
         number = execution_context.symbol_table.get("value")
         pow_of = execution_context.symbol_table.get("pow_of")
         if not (isinstance(number, Number) and isinstance(pow_of, Number)):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -1033,7 +1032,7 @@ class BuiltInFunction(BaseFunction):
     def execute_sqrt(self, execution_context):
         number = execution_context.symbol_table.get("value")
         if not isinstance(number, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{number} ain't a number",
                 execution_context
@@ -1048,7 +1047,7 @@ class BuiltInFunction(BaseFunction):
         n2 = execution_context.symbol_table.get("num2")
 
         if not isinstance(n1, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{n1} ain't a number",
                 execution_context
@@ -1056,7 +1055,7 @@ class BuiltInFunction(BaseFunction):
         n1 = n1.value
 
         if not isinstance(n2, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{n2} ain't a number",
                 execution_context
@@ -1072,7 +1071,7 @@ class BuiltInFunction(BaseFunction):
         n2 = execution_context.symbol_table.get("num2")
 
         if not isinstance(n1, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{n1} ain't a number",
                 execution_context
@@ -1080,7 +1079,7 @@ class BuiltInFunction(BaseFunction):
         n1 = n1.value
 
         if not isinstance(n2, Number):
-            return interpreter.RTResult().failure(FlummoxedError(
+            return interpreter.RTResult().failure(errors.FlummoxedError(
                 self.pos_start, self.pos_end,
                 "{n2} ain't a number",
                 execution_context

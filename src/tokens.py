@@ -1,6 +1,6 @@
 import string
 import positions
-from errors import VexedError
+import errors
 
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters
@@ -267,7 +267,7 @@ class Tokenise:
         pos_start = self.pos.copy()
         char = self.current_char
         self.advance()
-        return [], VexedError(pos_start, self.pos, "'" + char + "'")
+        return [], errors.VexedError(pos_start, self.pos, "'" + char + "'")
 
     def make_not_equals(self):
         pos_start = self.pos.copy()
@@ -277,7 +277,7 @@ class Tokenise:
             return Token(TT_NOT_EQUALS, pos_start=pos_start, pos_end=self.pos), None
 
         self.advance()
-        return None, VexedError(pos_start, self.pos, "'=' (after '!')")
+        return None, errors.VexedError(pos_start, self.pos, "'=' (after '!')")
 
     def make_less_than(self):
         pos_start = self.pos.copy()
