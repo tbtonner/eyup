@@ -210,13 +210,6 @@ class Interpreter:
             if error: return result.failure(error)
             return result.success(number.set_pos(node.pos_start, node.pos_end))
 
-
-        if not node.op_token.matches(tokens.TT_KEYWORD, 'not'):
-            return result.failure(errors.FlummoxedError(
-                node.pos_start, node.pos_end,
-                f"{number} ain't a number",
-                context
-            ))
         answer = number
         if not isinstance(answer, values.Answer):
             return result.failure(errors.FlummoxedError(
