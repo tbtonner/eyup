@@ -198,24 +198,37 @@ class Interpreter:
         if result.error:
             return result
 
-        if not isinstance(number, values.Number):
-            return result.failure(errors.FlummoxedError(
+        if node.op_token.type == tokens.TT_MINUS:
+            if not isinstance(number, values.Number):
+                return result.failure(errors.FlummoxedError(
                     node.pos_start, node.pos_end,
                     f"{number} ain't a number",
                     context
                 ))
-
-        error = None
-
-        if node.op_token.type == tokens.TT_MINUS:
             number, error = number.multiplied_by(values.Number(-1))
-        elif node.op_token.matches(tokens.TT_KEYWORD, 'not'):
-            number, error = number.notted()
 
-        if error:
-            return result.failure(error)
-        else:
+            if error: return result.failure(error)
             return result.success(number.set_pos(node.pos_start, node.pos_end))
+
+
+        if not node.op_token.matches(tokens.TT_KEYWORD, 'not'):
+            return result.failure(errors.FlummoxedError(
+                node.pos_start, node.pos_end,
+                f"{number} ain't a number",
+                context
+            ))
+        answer = number
+        if not isinstance(answer, values.Answer):
+            return result.failure(errors.FlummoxedError(
+                node.pos_start, node.pos_end,
+                f"{answer} ain't a answer",
+                context
+            ))
+
+        answer, error = answer.notted()
+
+        if error: return result.failure(error)
+        return result.success(answer.set_pos(node.pos_start, node.pos_end))
 
     def visit_BinaryOpNode(self, node, context):
         res = RTResult()

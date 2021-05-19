@@ -69,8 +69,8 @@ class Value:
     def ored_by(self, other):
         return None, self.illegal_operation(other)
 
-    def notted(self, other):
-        return None, self.illegal_operation(other)
+    def notted(self):
+        return None, self.illegal_operation(self)
 
     def execute(self, args):
         return interpreter.RTResult().failure(self.illegal_operation())
@@ -123,9 +123,9 @@ class Answer(Value):
             return Answer("nay").set_context(self.context), None
 
     def notted(self):
-        if self.value == ("aye"):
-            return Answer("aye").set_context(self.context), None
-        return Answer("nay").set_context(self.context), None
+        if self.value == ("aye"): 
+            return Answer("nay").set_context(self.context), None
+        return Answer("aye").set_context(self.context), None
 
     def is_true(self):
         return 1 if self.value == 'aye' else 0
