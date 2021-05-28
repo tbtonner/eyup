@@ -1,4 +1,7 @@
-import bodgers
+import sys
+sys.path.append("..")
+
+from src import bodgers
 
 #######################################
 # SHELL

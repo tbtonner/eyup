@@ -1,8 +1,8 @@
 import math
-import bodgers
-import interpreter
-import nodes
-import errors 
+from . import bodgers
+from . import interpreter
+from . import nodes
+from . import errors 
 
 #######################################
 # VALUES

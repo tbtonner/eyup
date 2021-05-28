@@ -1,8 +1,8 @@
-import tokens
-import nodes
-import values 
-import errors
-import bodgers
+from . import tokens
+from . import nodes
+from . import values 
+from . import errors
+from . import bodgers
 
 #######################################
 # PARSE RESULT

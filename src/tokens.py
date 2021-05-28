@@ -1,6 +1,6 @@
 import string
-import positions
-import errors
+from . import positions
+from . import errors
 
 DIGITS = '0123456789'
 LETTERS = string.ascii_letters

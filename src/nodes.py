@@ -1,4 +1,4 @@
-import values
+from . import values
 
 #######################################
 # NODES

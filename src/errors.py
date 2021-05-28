@@ -1,4 +1,4 @@
-import bodgers
+from . import bodgers
 
 #######################################
 # ERRORS

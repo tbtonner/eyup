@@ -1,11 +1,12 @@
-import bodgers
-import values
-import errors
-import tokens
-import nodes
 import time
 import sys
 from func_timeout import func_timeout, FunctionTimedOut
+
+from . import bodgers
+from . import values
+from . import errors
+from . import tokens
+from . import nodes
 
 #######################################
 # RUNTIME RESULT

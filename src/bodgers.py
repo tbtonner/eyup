@@ -1,8 +1,8 @@
-import values
-import interpreter
-import  nodes
-import tokens
-import parse
+from . import values
+from . import interpreter
+from . import nodes
+from . import tokens
+from . import parse
 
 #######################################
 # CONTEXT
