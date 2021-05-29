@@ -483,7 +483,7 @@ class Function(BaseFunction):
 
         if not isinstance(self.body_nodes.element_nodes, nodes.NowtNode):
             for _node in self.body_nodes.element_nodes:
-                if isinstance(_node, nodes.NowtNodeWangNode):
+                if isinstance(_node, nodes.NowtNode):
                     temp = _interpreter.visit(_node, execution_context)
                     if temp.error:
                         return result.failure(errors.FlummoxedError(

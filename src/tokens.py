@@ -219,7 +219,7 @@ class Tokenise:
             return Token(TT_FLOAT, float(num_str), pos_start, self.pos)
 
     def make_identifier(self):
-        id_script = ''
+        id_script = '' 
         pos_start = self.pos.copy()
 
         while self.current_char != None and self.current_char in LETTERS_DIGITS + '_':
