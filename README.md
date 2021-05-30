@@ -16,16 +16,16 @@ While in the parent directory of tests (eyup) in the command line, run: *__'pyte
 
 This should re-produce the tests, with the following coverage table:
 
-| Name                     | Stmts | Miss | Cover |
-|--------------------------|-------|------|-------|
-| \eyup\src\__init__.py    | 9     | 0    | 100%  |
-| \eyup\src\bodgers.py     | 123   | 1    | 99%   |
-| \eyup\src\errors.py      | 52    | 0    | 100%  |
-| \eyup\src\interpreter.py | 468   | 184  | 61%   |
-| \eyup\src\nodes.py       | 235   | 64   | 73%   |
-| \eyup\src\parse.py       | 592   | 142  | 76%   |
-| \eyup\src\positions.py   | 15    | 0    | 100%  |
-| \eyup\src\shell.py       | 64    | 43   | 33%   |
-| \eyup\src\tokens.py      | 205   | 5    | 98%   |
-| \eyup\src\values.py      | 734   | 188  | 74%   |
-| __TOTAL__                | 2497  | 627  | 75%   |
+| Name                | Stmts | Miss | Cover |
+|---------------------|-------|------|-------|
+| \src\__init__.py    | 9     | 0    | 100%  |
+| \src\bodgers.py     | 123   | 1    | 99%   |
+| \src\errors.py      | 52    | 0    | 100%  |
+| \src\interpreter.py | 468   | 184  | 61%   |
+| \src\nodes.py       | 235   | 64   | 73%   |
+| \src\parse.py       | 592   | 142  | 76%   |
+| \src\positions.py   | 15    | 0    | 100%  |
+| \src\shell.py       | 64    | 43   | 33%   |
+| \src\tokens.py      | 205   | 5    | 98%   |
+| \src\values.py      | 734   | 188  | 74%   |
+| __TOTAL__           | 2497  | 627  | 75%   |
