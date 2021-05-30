@@ -10,3 +10,22 @@ Simply run the eyup.exe application to run the latest version of EYUP in your sy
     1) install python3 system  
     2) navigate to eyup/src and run the command 'pip install -r requirements.txt'
     3) run the shell.py python file to run the program with your changes saved
+
+## Running the tests
+While in the parent directory of tests (eyup) in the command line, run: *__pytest --cov=src tests__*
+
+This should re-produce the tests, with the following coverage table:
+
+| Name                     | Stmts | Miss | Cover |
+|--------------------------|-------|------|-------|
+| \eyup\src\__init__.py    | 9     | 0    | 100%  |
+| \eyup\src\bodgers.py     | 123   | 1    | 99%   |
+| \eyup\src\errors.py      | 52    | 0    | 100%  |
+| \eyup\src\interpreter.py | 468   | 184  | 61%   |
+| \eyup\src\nodes.py       | 235   | 64   | 73%   |
+| \eyup\src\parse.py       | 592   | 142  | 76%   |
+| \eyup\src\positions.py   | 15    | 0    | 100%  |
+| \eyup\src\shell.py       | 64    | 43   | 33%   |
+| \eyup\src\tokens.py      | 205   | 5    | 98%   |
+| \eyup\src\values.py      | 734   | 188  | 74%   |
+| __TOTAL__                | 2497  | 627  | 75%   |
