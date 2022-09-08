@@ -7,8 +7,8 @@ To see how to use the language and environment read the 'eyup_concepts' document
 Simply run the eyup.exe application to run the latest version of EYUP in your system's command prompt.
 
 ## Running the source code
-    1) install python3 system  
-    2) navigate to the eyup main directory and run the command: 'pip install -r requirements.txt'
+    1) install python3 on the system used to run
+    2) navigate to the eyup main directory and run the command: 'pip3 install -r requirements.txt'
     3) run the shell.py python file inside src to run the program with your changes saved
 
 ## Running the tests
